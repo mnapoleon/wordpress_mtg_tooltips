@@ -10,10 +10,10 @@ Version: 0.1
 include('lib/bbp-do-shortcodes.php');
 
 
-add_action('init', 'arkhamhorro_launch_tooltip_plugin');
+add_action('init', 'arkhamhorror_launch_tooltip_plugin');
 
 
-function arkhamhorro_launch_tooltip_plugin() {
+function arkhamhorror_launch_tooltip_plugin() {
     $tp = new Deckbox_Tooltip_plugin();
 }
 
@@ -193,18 +193,18 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
         function add_option_menu() {
             $title = '';
             if ( version_compare(get_bloginfo('version'), '2.6.999', '>')) {
-                $title = '<img src="'.$this->_images_dir.'deckbox_dragon.jpg" alt="deckbox.org" /> ';
+                $title = '<img src="'.$this->_images_dir.'eldersign_16.png" alt="deckbox.org" /> ';
             }
-            $title .= ' Deckbox Tooltips';
+            $title .= ' Arkham Horror LCG Tooltips';
 
-            add_options_page('Deckbox Tooltips', $title, 'read', 'magic-the-gathering-card-tooltips',
+            add_options_page('Arkham Horror LCG Tooltips', $title, 'read', 'arkham-horror-lcg-card-tooltips',
                 array($this, 'draw_menu'));
         }
 
         function draw_menu() {
             echo '
               <div class="wrap">
-                <h2>Deckbox MtG Card Tooltips Settings</h2><br/>
+                <h2>Arkham Horror LCG Card Tooltips Settings</h2><br/>
                 <div id="poststuff" class="ui-sortable"><div class="postbox">
                     <h3 style="font-size:14px;">General Settings</h3>
                     <div class="inside">
