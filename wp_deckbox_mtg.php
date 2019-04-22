@@ -1,20 +1,19 @@
 <?php
 /*
-Plugin Name: Magic the Gathering Card Tooltips
+Plugin Name: Arkham Horror LCG Tooltips Plugin
 Plugin URI: https://github.com/SebastianZaha/wordpress_mtg_tooltips
-Description: Easily transform Magic the Gathering card names into links that show the card
+Description: Easily transform Arkham Horror LCG card names into links that show the card
 image in a tooltip when hovering over them. You can also quickly create deck listings.
-Author: Sebastian Zaha
-Version: 3.1.6
-Author URI: https://deckbox.org
+Author: Michael Napoleon
+Version: 0.1
 */
 include('lib/bbp-do-shortcodes.php');
 
 
-add_action('init', 'deckbox_launch_tooltip_plugin');
+add_action('init', 'arkhamhorro_launch_tooltip_plugin');
 
 
-function deckbox_launch_tooltip_plugin() {
+function arkhamhorro_launch_tooltip_plugin() {
     $tp = new Deckbox_Tooltip_plugin();
 }
 
@@ -30,12 +29,12 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
         private $_images_dir;
 
         function __construct() {
-            $this->_name = 'Magic the Gathering Card Tooltips';
+            $this->_name = 'Arkham Horror Tooltips';
             $this->_optionName = 'deckbox_tooltip_options';
             $this->_value = array();
             $this->_styles = array('tooltip', 'embedded');
-            $this->_resources_dir = plugins_url().'/magic-the-gathering-card-tooltips/resources/';
-            $this->_images_dir = plugins_url().'/magic-the-gathering-card-tooltips/images/';
+            $this->_resources_dir = plugins_url().'/wordpress_mtg_tooltips/resources/';
+            $this->_images_dir = plugins_url().'/wordpress_mtg_tooltips/images/';
 
             $this->loadSettings();
             $this->init();
@@ -56,7 +55,7 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
 
         function add_shortcodes() {
             add_shortcode('mtg_card', array($this,'parse_mtg_card'));
-            add_shortcode('card', array($this,'parse_mtg_card'));
+            add_shortcode('card', array($this,'parse_arkham_cards'));
             add_shortcode('c', array($this,'parse_mtg_card'));
             add_shortcode('mtg_deck', array($this,'parse_mtg_deck'));
             add_shortcode('deck', array($this,'parse_mtg_deck'));
@@ -85,13 +84,26 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
         }
 
         function add_scripts() {
-            wp_enqueue_script('deckbox', 'https://deckbox.org/javascripts/tooltip.js');
+            //wp_enqueue_script('deckbox', 'https://deckbox.org/javascripts/tooltip.js');
+	        wp_enqueue_script('deckbox', $this->_resources_dir.'tooltip.js');
             wp_enqueue_script('deckbox_extensions', $this->_resources_dir.'tooltip_extension.js', array('jquery'));
             add_action('wp_head', array($this, 'init_css'));
         }
 
         function parse_mtg_card($atts, $content=null) {
             return '<a class="deckbox_link" target="_blank" href="https://deckbox.org/mtg/' . $content . '">' . $content . '</a>';
+        }
+
+        function parse_arkham_cards($atts, $content=null) {
+            $url_cards = "http://arkhamdb.com/api/public/card/01008";
+            $request = wp_remote_get($url_cards);
+            if (is_wp_error($request)) {
+                return false;
+            }
+            $body = wp_remote_retrieve_body($request);
+            $data = json_decode($body);
+	        return '<a class="deckbox_link" target="_blank" href="https://arkhamdb.com' . $data->imagesrc . '">' . $content . '</a>';
+
         }
 
         function cleanup_shortcode_content($content) {
