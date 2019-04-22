@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Arkham Horror LCG Tooltips Plugin
-Plugin URI: https://github.com/SebastianZaha/wordpress_mtg_tooltips
+Plugin URI: https://github.com/mnapoleon/wp_arkhamhorrolcg_tooltips
 Description: Easily transform Arkham Horror LCG card names into links that show the card
 image in a tooltip when hovering over them. You can also quickly create deck listings.
 Author: Michael Napoleon
