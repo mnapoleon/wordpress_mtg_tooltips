@@ -27,14 +27,16 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
         private $_styles;
         private $_resources_dir;
         private $_images_dir;
+        private $_allCards;
 
         function __construct() {
             $this->_name = 'Arkham Horror Tooltips';
             $this->_optionName = 'deckbox_tooltip_options';
             $this->_value = array();
             $this->_styles = array('tooltip', 'embedded');
-            $this->_resources_dir = plugins_url().'/wordpress_mtg_tooltips/resources/';
-            $this->_images_dir = plugins_url().'/wordpress_mtg_tooltips/images/';
+            $this->_resources_dir = plugins_url().'/wp_arkhamhorrorlcg_tooltips/resources/';
+            $this->_images_dir = plugins_url().'/wp_arkhamhorrorlcg_tooltips/images/';
+            $this->_allCards = array();
 
             $this->loadSettings();
             $this->init();
@@ -46,6 +48,28 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
             $this->add_shortcodes();
             $this->add_scripts();
             $this->add_buttons();
+            $this->loadCards();
+
+        }
+
+        function loadCards() {
+            $url_allCards = "http://arkhamdb.com/api/public/cards";
+            $request = wp_remote_get($url_allCards);
+            if (is_wp_error($request)) {
+                return false;
+            }
+            $body = wp_remote_retrieve_body($request);
+            $data = json_decode($body);
+
+            foreach ($data as $card) {
+                $card_name = urlencode(($card->name).strtolower());
+                if (array_key_exists($card_name, $this->_allCards)) {
+
+                }
+                else {
+                    $this->_allCards[$card_name] = $card->imagesrc;
+                }
+            }
         }
 
         function init_css() {
@@ -95,15 +119,17 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
         }
 
         function parse_arkham_cards($atts, $content=null) {
-            $url_cards = "http://arkhamdb.com/api/public/card/01008";
-            $request = wp_remote_get($url_cards);
-            if (is_wp_error($request)) {
-                return false;
-            }
-            $body = wp_remote_retrieve_body($request);
-            $data = json_decode($body);
-	        return '<a class="deckbox_link" target="_blank" href="https://arkhamdb.com' . $data->imagesrc . '">' . $content . '</a>';
-
+            //$url_cards = "http://arkhamdb.com/api/public/card/01008";
+            //$request = wp_remote_get($url_cards);
+            //if (is_wp_error($request)) {
+            //    return false;
+            //
+            //$body = wp_remote_retrieve_body($request);
+            //$data = json_decode($body);
+            $lookup_name = urlencode($content.strtolower());
+            $card_imgsrc = $this->_allCards[$lookup_name];
+	        //return '<a class="deckbox_link" target="_blank" href="https://arkhamdb.com' . $data->imagesrc . '">' . $content . '</a>';
+            return '<a class="deckbox_link" target="_blank" href="https://arkhamdb.com' . $card_imgsrc . '">' . $content . '</a>';
         }
 
         function cleanup_shortcode_content($content) {
