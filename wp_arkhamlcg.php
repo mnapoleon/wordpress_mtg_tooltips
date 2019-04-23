@@ -62,11 +62,12 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
             $data = json_decode($body);
 
             foreach ($data as $card) {
-                $card_name = urlencode(($card->name).strtolower());
+                $card_name = strtolower($card->name);
                 if (array_key_exists($card_name, $this->_allCards)) {
 
                 }
                 else {
+                    error_log("Card name" . $card->name);
                     $this->_allCards[$card_name] = $card->imagesrc;
                 }
             }
@@ -126,7 +127,7 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
             //
             //$body = wp_remote_retrieve_body($request);
             //$data = json_decode($body);
-            $lookup_name = urlencode($content.strtolower());
+            $lookup_name = strtolower($content);
             $card_imgsrc = $this->_allCards[$lookup_name];
 	        //return '<a class="deckbox_link" target="_blank" href="https://arkhamdb.com' . $data->imagesrc . '">' . $content . '</a>';
             return '<a class="deckbox_link" target="_blank" href="https://arkhamdb.com' . $card_imgsrc . '">' . $content . '</a>';
