@@ -49,7 +49,6 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
             $this->add_scripts();
             $this->add_buttons();
             $this->loadCards();
-
         }
 
         function loadCards() {
@@ -62,13 +61,16 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
             $data = json_decode($body);
 
             foreach ($data as $card) {
-                $card_name = strtolower($card->name);
+                $card_name = trim(strtolower($card->name));
+                $card_name = str_replace('"', '', $card_name);
+                $card_name = str_replace("'", "", $card_name);
                 if (array_key_exists($card_name, $this->_allCards)) {
 
                 }
                 else {
-                    error_log("Card name" . $card->name);
-                    $this->_allCards[$card_name] = $card->imagesrc;
+                    if (isset($card->imagesrc)) {
+                        $this->_allCards[$card_name] = $card->imagesrc;
+                    }
                 }
             }
         }
@@ -120,6 +122,10 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
         }
 
         function parse_arkham_cards($atts, $content=null) {
+            foreach ($this->_allCards as $key => $value) {
+                error_log($key . " => " . $value . "\n");
+            }
+            //error_log("Content from blog... " .  $content);
             //$url_cards = "http://arkhamdb.com/api/public/card/01008";
             //$request = wp_remote_get($url_cards);
             //if (is_wp_error($request)) {
@@ -127,8 +133,12 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
             //
             //$body = wp_remote_retrieve_body($request);
             //$data = json_decode($body);
-            $lookup_name = strtolower($content);
-            $card_imgsrc = $this->_allCards[$lookup_name];
+            $lookup_name = trim(strtolower(wp_specialchars_decode($content, ENT_COMPAT)));
+            $lookup_name1 = str_replace('"', '', $lookup_name);
+            $lookup_name2 = str_replace("'", "", $lookup_name1);
+            error_log("Lookup name:" . $lookup_name2 . ":");
+            $card_imgsrc = $this->_allCards[$lookup_name2];
+
 	        //return '<a class="deckbox_link" target="_blank" href="https://arkhamdb.com' . $data->imagesrc . '">' . $content . '</a>';
             return '<a class="deckbox_link" target="_blank" href="https://arkhamdb.com' . $card_imgsrc . '">' . $content . '</a>';
         }
