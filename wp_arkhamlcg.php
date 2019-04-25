@@ -26,7 +26,8 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
         private $_styles;
         private $_resources_dir;
         private $_images_dir;
-        private $_allCards;
+        private $_allAHCards;
+        private $_allLOTRCards;
 
         function __construct() {
             $this->_name = 'Arkham Horror Tooltips';
@@ -35,7 +36,9 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
             $this->_styles = array('tooltip', 'embedded');
             $this->_resources_dir = plugins_url().'/wp_arkhamhorrorlcg_tooltips/resources/';
             $this->_images_dir = plugins_url().'/wp_arkhamhorrorlcg_tooltips/images/';
-            $this->_allCards = array();
+            $this->_allAHCards = array();
+            $this->_allLOTRCards = array();
+
 
             $this->loadSettings();
             $this->init();
@@ -47,21 +50,21 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
             $this->add_shortcodes();
             $this->add_scripts();
             $this->add_buttons();
-            $this->loadCards();
+            $this->loadAHCards();
+            $this->loadLOTRCards();
         }
 
-        function loadCards() {
-            $url_allCards = "http://arkhamdb.com/api/public/cards";
-            $request = wp_remote_get($url_allCards);
+        function loadLOTRCards() {
+            $url_allLOTRCards = "http://ringsdb.com/api/public/cards";
+            $request = wp_remote_get($url_allLOTRCards);
             if (is_wp_error($request)) {
                 return false;
             }
             $body = wp_remote_retrieve_body($request);
             $data = json_decode($body);
-
             foreach ($data as $card) {
                 $card_name = trim(strtolower($card->name));
-                if (array_key_exists($card_name, $this->_allCards)) {
+                if (array_key_exists($card_name, $this->_allLOTRCards)) {
 
                 }
                 else {
@@ -70,7 +73,33 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
                             'card_url' => $card->url,
                             'card_imgsrc' => $card-> imagesrc
                         ];
-                        $this->_allCards[$card_name] = $card_data;
+                        $this->_allLOTRCards[$card_name] = $card_data;
+                    }
+                }
+            }
+        }
+
+        function loadAHCards() {
+            $url_allAHCards = "http://arkhamdb.com/api/public/cards";
+            $request = wp_remote_get($url_allAHCards);
+            if (is_wp_error($request)) {
+                return false;
+            }
+            $body = wp_remote_retrieve_body($request);
+            $data = json_decode($body);
+
+            foreach ($data as $card) {
+                $card_name = trim(strtolower($card->name));
+                if (array_key_exists($card_name, $this->_allAHCards)) {
+
+                }
+                else {
+                    if (isset($card->imagesrc)) {
+                        $card_data = (object) [
+                            'card_url' => $card->url,
+                            'card_imgsrc' => $card-> imagesrc
+                        ];
+                        $this->_allAHCards[$card_name] = $card_data;
                     }
                 }
             }
@@ -82,12 +111,14 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
         }
 
         function add_shortcodes() {
-            add_shortcode('mtg_card', array($this,'parse_mtg_card'));
+            //add_shortcode('mtg_card', array($this,'parse_mtg_card'));
             add_shortcode('card', array($this,'parse_arkham_cards'));
-            add_shortcode('c', array($this,'parse_mtg_card'));
-            add_shortcode('mtg_deck', array($this,'parse_mtg_deck'));
-            add_shortcode('deck', array($this,'parse_mtg_deck'));
-            add_shortcode('d', array($this,'parse_mtg_deck'));
+            add_shortcode('ah_card', array($this,'parse_arkham_cards'));
+            add_shortcode('lotr_card', array($this,'parse_lotr_cards'));
+            //add_shortcode('c', array($this,'parse_mtg_card'));
+            //add_shortcode('mtg_deck', array($this,'parse_mtg_deck'));
+            //add_shortcode('deck', array($this,'parse_mtg_deck'));
+            //add_shortcode('d', array($this,'parse_mtg_deck'));
         }
 
         function add_buttons() {
@@ -141,23 +172,20 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
             return $str;
         }
 
-        function parse_arkham_cards($atts, $content=null) {
-            //foreach ($this->_allCards as $key => $value) {
-            //    error_log($key . " => " . $value . "\n");
-            //}
-            error_log("Content from blog... " .  $content);
-            //$url_cards = "http://arkhamdb.com/api/public/card/01008";
-            //$request = wp_remote_get($url_cards);
-            //if (is_wp_error($request)) {
-            //    return false;
-            //
-            //$body = wp_remote_retrieve_body($request);
-            //$data = json_decode($body);
+        function parse_lotr_cards($atts, $content=null) {
             $fixed = html_entity_decode($content, ENT_QUOTES);
-            error_log("fixed name....:" . $fixed . ":");
             $lookup_name = trim(strtolower($this->convert_quotes($fixed)));
-            error_log("lookup name:" . $lookup_name . ":");
-            $card_data = $this->_allCards[$lookup_name];
+            $card_data = $this->_allLOTRCards[$lookup_name];
+            $card_url = $card_data->card_url;
+            $card_imgsrc = $card_data->card_imgsrc;
+
+            return '<a class="deckbox_link" target="_blank" href="' . $card_url .'" data-href="https://ringsdb.com' . $card_imgsrc . '">' . $content . '</a>';
+        }
+
+        function parse_arkham_cards($atts, $content=null) {
+            $fixed = html_entity_decode($content, ENT_QUOTES);
+            $lookup_name = trim(strtolower($this->convert_quotes($fixed)));
+            $card_data = $this->_allAHCards[$lookup_name];
             $card_url = $card_data->card_url;
             $card_imgsrc = $card_data->card_imgsrc;
 
