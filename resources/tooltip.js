@@ -227,13 +227,22 @@ Deckbox._ = {
         document.getElementsByTagName("head")[0].appendChild(s);
     },
 
-    needsTooltip: function(el) {
+    /*needsTooltip: function(el) {
         if (el.getAttribute('data-tt')) return true;
 
         var href;
         if (!el || !(el.tagName == 'A') || !(href = el.getAttribute('href'))) return false;
         if (el.className.match('no_tooltip')) return false;
         return href.match(/^https?:\/\/[^\/]*\/(mtg|wow|whi|bundles)\/.+/);
+    },*/
+
+    needsTooltip: function(el) {
+        if (el.getAttribute('data-tt')) return true;
+
+        var href;
+        if (!el || !(el.tagName == 'A') || !(href = el.getAttribute('data-href'))) return false;
+        if (el.className.match('no_tooltip')) return false;
+        return href.match(/^https?:\/\/[^\/]*\/bundles\/.+/);
     },
 
     tooltip: function(which)  {
@@ -265,8 +274,8 @@ Deckbox._ = {
                     showImage(el, url, posX, posY);
                 } else if (el.href.match('/(mtg|whi)/')) {
                     showImage(el, el.href + '/tooltip', posX, posY);
-                } else if (el.href.match('bundles')) {
-                  showImage(el, el.href, posX, posY);
+                } else if (el.getAttribute('data-href').match('bundles')) {
+                  showImage(el, el.getAttribute('data-href'), posX, posY);
                 } else {
                     Deckbox._.tooltip('wow').showWow(posX, posY, null, el.href + '/tooltip', el);
                 }

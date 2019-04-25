@@ -61,14 +61,16 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
 
             foreach ($data as $card) {
                 $card_name = trim(strtolower($card->name));
-                //$card_name = str_replace('"', '', $card_name);
-                //$card_name = str_replace("'", "", $card_name);
                 if (array_key_exists($card_name, $this->_allCards)) {
 
                 }
                 else {
                     if (isset($card->imagesrc)) {
-                        $this->_allCards[$card_name] = $card->imagesrc;
+                        $card_data = (object) [
+                            'card_url' => $card->url,
+                            'card_imgsrc' => $card-> imagesrc
+                        ];
+                        $this->_allCards[$card_name] = $card_data;
                     }
                 }
             }
@@ -155,10 +157,12 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
             error_log("fixed name....:" . $fixed . ":");
             $lookup_name = trim(strtolower($this->convert_quotes($fixed)));
             error_log("lookup name:" . $lookup_name . ":");
-            $card_imgsrc = $this->_allCards[$lookup_name];
+            $card_data = $this->_allCards[$lookup_name];
+            $card_url = $card_data->card_url;
+            $card_imgsrc = $card_data->card_imgsrc;
 
-	        //return '<a class="deckbox_link" target="_blank" href="https://arkhamdb.com' . $data->imagesrc . '">' . $content . '</a>';
-            return '<a class="deckbox_link" target="_blank" href="https://arkhamdb.com' . $card_imgsrc . '">' . $content . '</a>';
+            //return '<a class="deckbox_link" target="_blank" href="https://arkhamdb.com' . $card_imgsrc . '">' . $content . '</a>';
+            return '<a class="deckbox_link" target="_blank" href="' . $card_url .'" data-href="https://arkhamdb.com' . $card_imgsrc . '">' . $content . '</a>';
         }
 
         function cleanup_shortcode_content($content) {
