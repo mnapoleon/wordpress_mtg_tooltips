@@ -9,7 +9,6 @@ Version: 0.1
 */
 include('lib/bbp-do-shortcodes.php');
 
-
 add_action('init', 'arkhamhorror_launch_tooltip_plugin');
 
 
@@ -62,8 +61,8 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
 
             foreach ($data as $card) {
                 $card_name = trim(strtolower($card->name));
-                $card_name = str_replace('"', '', $card_name);
-                $card_name = str_replace("'", "", $card_name);
+                //$card_name = str_replace('"', '', $card_name);
+                //$card_name = str_replace("'", "", $card_name);
                 if (array_key_exists($card_name, $this->_allCards)) {
 
                 }
@@ -121,11 +120,30 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
             return '<a class="deckbox_link" target="_blank" href="https://deckbox.org/mtg/' . $content . '">' . $content . '</a>';
         }
 
+        function convert_quotes($value) {
+            $quotes = array(
+                "\xC2\xAB"     => '"', // « (U+00AB) in UTF-8
+                "\xC2\xBB"     => '"', // » (U+00BB) in UTF-8
+                "\xE2\x80\x98" => "'", // ‘ (U+2018) in UTF-8
+                "\xE2\x80\x99" => "'", // ’ (U+2019) in UTF-8
+                "\xE2\x80\x9A" => "'", // ‚ (U+201A) in UTF-8
+                "\xE2\x80\x9B" => "'", // ‛ (U+201B) in UTF-8
+                "\xE2\x80\x9C" => '"', // “ (U+201C) in UTF-8
+                "\xE2\x80\x9D" => '"', // ” (U+201D) in UTF-8
+                "\xE2\x80\x9E" => '"', // „ (U+201E) in UTF-8
+                "\xE2\x80\x9F" => '"', // ‟ (U+201F) in UTF-8
+                "\xE2\x80\xB9" => "'", // ‹ (U+2039) in UTF-8
+                "\xE2\x80\xBA" => "'", // › (U+203A) in UTF-8
+            );
+            $str = strtr($value, $quotes);
+            return $str;
+        }
+
         function parse_arkham_cards($atts, $content=null) {
-            foreach ($this->_allCards as $key => $value) {
-                error_log($key . " => " . $value . "\n");
-            }
-            //error_log("Content from blog... " .  $content);
+            //foreach ($this->_allCards as $key => $value) {
+            //    error_log($key . " => " . $value . "\n");
+            //}
+            error_log("Content from blog... " .  $content);
             //$url_cards = "http://arkhamdb.com/api/public/card/01008";
             //$request = wp_remote_get($url_cards);
             //if (is_wp_error($request)) {
@@ -133,11 +151,11 @@ if (! class_exists('Deckbox_Tooltip_plugin')) {
             //
             //$body = wp_remote_retrieve_body($request);
             //$data = json_decode($body);
-            $lookup_name = trim(strtolower(wp_specialchars_decode($content, ENT_COMPAT)));
-            $lookup_name1 = str_replace('"', '', $lookup_name);
-            $lookup_name2 = str_replace("'", "", $lookup_name1);
-            error_log("Lookup name:" . $lookup_name2 . ":");
-            $card_imgsrc = $this->_allCards[$lookup_name2];
+            $fixed = html_entity_decode($content, ENT_QUOTES);
+            error_log("fixed name....:" . $fixed . ":");
+            $lookup_name = trim(strtolower($this->convert_quotes($fixed)));
+            error_log("lookup name:" . $lookup_name . ":");
+            $card_imgsrc = $this->_allCards[$lookup_name];
 
 	        //return '<a class="deckbox_link" target="_blank" href="https://arkhamdb.com' . $data->imagesrc . '">' . $content . '</a>';
             return '<a class="deckbox_link" target="_blank" href="https://arkhamdb.com' . $card_imgsrc . '">' . $content . '</a>';
